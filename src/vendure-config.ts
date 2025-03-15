@@ -3,6 +3,7 @@ import {
     DefaultJobQueuePlugin,
     DefaultSearchPlugin,
     VendureConfig,
+    ApiOptions
 } from '@vendure/core';
 import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
 import { AssetServerPlugin, configureS3AssetStorage } from '@vendure/asset-server-plugin';
@@ -12,11 +13,39 @@ import path from 'path';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
+const corsOptions: ApiOptions["cors"] = {
+    origin: [
+        // Allow your Cloudflare Worker domain
+        "https://viorette.an30458.workers.dev",
+        // Also allow your development domains
+        "http://localhost:3000",
+        "http://localhost:8000",
+        // Add any other domains you need
+        // You can also use a wildcard, but this is less secure
+        // '*'
+    ],
+    credentials: true,
+    methods: ["GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "CF-Worker",
+        "CF-Cache-Status",
+        "User-Agent",
+    ],
+    exposedHeaders: ["vendure-auth-token"],
+    maxAge: 86400,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+};
+
 export const config: VendureConfig = {
     apiOptions: {
         port: +(process.env.PORT || 3000),
         adminApiPath: 'admin-api',
         shopApiPath: 'shop-api',
+                cors: corsOptions,
         // The following options are useful in development mode,
         // but are best turned off for production for security
         // reasons.
